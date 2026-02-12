@@ -1,9 +1,11 @@
 <template>
   <div class="card downloader-card">
     <div class="header-actions">
-      <h2 class="card-title">Téléchargements</h2>
+      <h2 class="card-title">{{ t('downloads_title') }}</h2>
       <button class="btn btn-sm btn-outline" @click="fetchJobs" :disabled="jobsLoading">
-        🔄 Actualiser
+        <!-- Icone Refresh SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16l5 5v-5"/></svg>
+        {{ t('refresh') }}
       </button>
     </div>
 
@@ -11,23 +13,23 @@
     <div class="input-zone">
       <form @submit.prevent="startDownload" class="download-bar">
         <select v-model="form.type" class="form-input type-select">
-          <option value="track">Musique</option>
-          <option value="album">Album</option>
-          <option value="playlist">Playlist</option>
-          <option value="episode">Podcast</option>
+          <option value="track">{{ t('type_track') }}</option>
+          <option value="album">{{ t('type_album') }}</option>
+          <option value="playlist">{{ t('type_playlist') }}</option>
+          <option value="episode">{{ t('type_podcast') }}</option>
         </select>
         
         <input
           v-model="form.url"
           type="text"
           required
-          placeholder="Collez votre lien Spotify ici..."
+          :placeholder="t('placeholder_url')"
           class="form-input url-input"
         />
         
         <button class="btn btn-primary" type="submit" :disabled="loading">
-          <span v-if="!loading">Télécharger</span>
-          <span v-else>...</span>
+          <span v-if="!loading">{{ t('btn_download') }}</span>
+          <span v-else>{{ t('btn_launching') }}</span>
         </button>
       </form>
       
@@ -40,22 +42,22 @@
       <table class="jobs-table">
         <thead>
           <tr>
-            <th>Nom / URL</th>
-            <th>Type</th>
-            <th>Statut</th>
-            <th class="text-right">Progression</th>
+            <th>{{ t('col_name') }}</th>
+            <th>{{ t('col_type') }}</th>
+            <th>{{ t('col_status') }}</th>
+            <th class="text-right">{{ t('col_progress') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="jobs.length === 0">
-            <td colspan="4" class="empty-state">Aucun téléchargement récent</td>
+            <td colspan="4" class="empty-state">{{ t('empty_state') }}</td>
           </tr>
           <tr v-for="job in jobs" :key="job.id">
             <td class="col-title" :title="job.url">
               {{ job.title || job.url }}
               <div class="date-sub">{{ formatDate(job.created_at) }}</div>
             </td>
-            <td><span class="badge-type">{{ job.type }}</span></td>
+            <td><span class="badge-type">{{ translateType(job.type) }}</span></td>
             <td>
               <span class="status-indicator" :class="job.status">
                 {{ translateStatus(job.status) }}
@@ -80,13 +82,39 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+const props = defineProps(['lang', 't'])
 
-const form = ref({
-  url: '',
-  type: 'track',
-})
+// Ajoute ces clés dans ton translations.js si elles manquent :
+// col_name: "Name / URL", col_type: "Type", col_status: "Status", col_progress: "Progress"
+// col_name: "Nom / URL", col_type: "Type", col_status: "Statut", col_progress: "Progression"
 
+const translateStatus = (status) => {
+  const map = {
+    running: props.t('status_running'),
+    done: props.t('status_done'),
+    error: props.t('status_error'),
+    pending: props.t('status_pending')
+  }
+  return map[status] || status
+}
+
+const translateType = (type) => {
+    const map = {
+        track: props.t('type_track'),
+        album: props.t('type_album'),
+        playlist: props.t('type_playlist'),
+        episode: props.t('type_podcast')
+    }
+    return map[type] || type
+}
+
+const formatDate = (dateStr) => {
+    if(!dateStr) return ''
+    return new Date(dateStr).toLocaleString(props.lang)
+}
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:1337'
+const form = ref({ url: '', type: 'track' })
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -96,11 +124,7 @@ const jobsLoading = ref(false)
 const getSettings = () => {
   const stored = localStorage.getItem('zotify-settings')
   if (stored) {
-    try {
-      return JSON.parse(stored)
-    } catch {
-      return {}
-    }
+    try { return JSON.parse(stored) } catch { return {} }
   }
   return {}
 }
@@ -114,7 +138,7 @@ const startDownload = async () => {
   
   const payload = {
     url: form.value.url,
-    type: form.value.type || 'track', // Valeur par défaut si vide
+    type: form.value.type || 'track',
     client_id: settings.client_id || '',
     output_dir: settings.output_dir || './downloads',
     quality: settings.quality || 'high',
@@ -125,39 +149,33 @@ const startDownload = async () => {
   }
 
   try {
-    // Envoie ce payload unique
     const res = await axios.post(`${API_BASE}/download`, payload)
-    success.value = res.data.message || 'Téléchargement démarré.'
+    success.value = res.data.message || 'Started.'
     form.value.url = ''
     fetchJobs()
   } catch (e) {
-    console.error(e) // Affiche l'erreur complète dans la console du navigateur
-    error.value = e.response?.data?.detail || e.message || 'Erreur lors du lancement.'
+    console.error(e)
+    error.value = e.response?.data?.detail || e.message || 'Error launching download.'
   } finally {
     loading.value = false
   }
 }
 
-
 const fetchJobs = async () => {
-  jobsLoading.value = true
-  try {
-    const res = await axios.get(`${API_BASE}/jobs`)
-    jobs.value = res.data || []
-  } catch (e) {
-    console.error(e)
-  } finally {
-    jobsLoading.value = false
-  }
-}
-
-const formatDate = (value) => {
-  if (!value) return ''
-  return new Date(value).toLocaleString('fr-FR')
+    jobsLoading.value = true
+    try {
+        const res = await axios.get(`${API_BASE}/jobs`)
+        jobs.value = res.data.reverse()
+    } catch (e) {
+        console.error(e)
+    } finally {
+        jobsLoading.value = false
+    }
 }
 
 onMounted(() => {
-  fetchJobs()
+    fetchJobs()
+    setInterval(fetchJobs, 5000) // Auto refresh
 })
 </script>
 
@@ -171,7 +189,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .download-bar {
@@ -204,6 +222,7 @@ onMounted(() => {
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
+  background: var(--bg-card); /* Fond correct */
 }
 
 .jobs-table {
@@ -212,8 +231,9 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
+/* FIX: Utiliser var(--bg-app) ou var(--bg-card) pour le header */
 .jobs-table th {
-  background: #f8fafc;
+  background: var(--bg-app); /* S'adapte au thème sombre/clair */
   padding: 1rem;
   text-align: left;
   font-weight: 600;
@@ -221,12 +241,14 @@ onMounted(() => {
   position: sticky;
   top: 0;
   border-bottom: 1px solid var(--border);
+  z-index: 10; /* Reste au dessus */
 }
 
 .jobs-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
+  color: var(--text-primary); /* Texte lisible en dark mode */
 }
 
 .col-title {
@@ -244,7 +266,7 @@ onMounted(() => {
 }
 
 .badge-type {
-  background: #eff6ff;
+  background: rgba(37, 99, 235, 0.1); /* Transparent blue */
   color: var(--accent);
   padding: 4px 8px;
   border-radius: 4px;
@@ -264,9 +286,9 @@ onMounted(() => {
   border-radius: 50%;
   background: #cbd5e1;
 }
-.status-indicator.running::before { background: #3b82f6; } /* Bleu */
-.status-indicator.done::before { background: #22c55e; }    /* Vert */
-.status-indicator.error::before { background: #ef4444; }   /* Rouge */
+.status-indicator.running::before { background: #3b82f6; } 
+.status-indicator.done::before { background: #22c55e; }    
+.status-indicator.error::before { background: #ef4444; }   
 
 .progress-wrapper {
   display: flex;
@@ -278,7 +300,7 @@ onMounted(() => {
 .progress-bar {
   width: 100px;
   height: 6px;
-  background: #e2e8f0;
+  background: var(--border);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -303,5 +325,14 @@ onMounted(() => {
 .btn-outline:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .download-bar {
+        flex-direction: column;
+    }
+    .type-select, .url-input, .btn-primary {
+        width: 100%;
+    }
 }
 </style>

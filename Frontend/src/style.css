@@ -3,17 +3,36 @@
   line-height: 1.6;
   font-weight: 400;
 
-  /* Palette de couleurs "Professionnel & Sobre" */
-  --bg-app: #f8fafc;        /* Fond général très clair */
-  --bg-card: #ffffff;       /* Fond des cartes */
-  --text-primary: #1e293b;  /* Texte principal (gris foncé, pas noir pur) */
-  --text-secondary: #64748b;/* Texte secondaire */
-  --accent: #2563eb;        /* Bleu professionnel */
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --input-bg: #ffffff;
+  --accent: #2563eb;
   --accent-hover: #1d4ed8;
-  --border: #e2e8f0;        /* Bordures subtiles */
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --radius: 12px;           /* Arrondis modernes */
+  --accent-text: #ffffff;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --scroll-thumb: #cbd5e1;
+}
+
+.input-short {
+  width: 120px;
+  max-width: 100%;
+}
+
+body.dark-mode {
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --input-bg: #020617;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-text: #ffffff;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+  --scroll-thumb: #475569;
 }
 
 body {
@@ -24,6 +43,7 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 #app {
@@ -32,7 +52,7 @@ body {
   flex-direction: column;
 }
 
-/* Reset buttons & inputs */
+
 button, input, select {
   font-family: inherit;
   font-size: 0.95rem;
@@ -44,27 +64,24 @@ h1, h2, h3 {
   margin: 0;
 }
 
-/* Utilitaires communs */
+
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
   height: 100%;
-  overflow-y: auto;
-  transition: box-shadow 0.2s;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .btn {
   background-color: var(--accent);
-  color: white;
+  color: var(--accent-text);
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
@@ -77,27 +94,51 @@ h1, h2, h3 {
 
 .btn:hover:not(:disabled) {
   background-color: var(--accent-hover);
-  transform: translateY(-1px);
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
+
+.btn-icon {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  font-size: 1.2rem;
+}
+.btn-icon:hover {
+  background: rgba(128, 128, 128, 0.1);
+  color: var(--text-primary);
+}
+
 
 .form-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--input-bg);
   color: var(--text-primary);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
+
 
 .form-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 4px;
 }

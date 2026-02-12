@@ -96,7 +96,7 @@ Before you begin, ensure you have the following installed:
 
 ## 🗺️ RoadMap
 
-- [ ] **Add multiple languages** : Add languages for the app.
+- [ ] **Add multiple languages** : Add languages for the app. (Currently only French and English are available)
 - [ ] **Docker** : Create a single container including Zotify, the backend, and the frontend.
 - [ ] **Linux support** : Improve system command compatibility for Unix environments. (Not yet Tested)
 - [ ] **Queue manager** : Implement a robust queue to automatically handle Zotify's “single-task” limitations.
@@ -107,10 +107,21 @@ Before you begin, ensure you have the following installed:
 
 We welcome contributions on ZotifyFrontEnd! If you're interested in improving this project, please consider the following:
 
-- **Fork the repository.**
-- Create a new branch for your feature or bug fix.
-- Make your changes and ensure they adhere to the project's coding style.
-- Submit a pull request with a clear description of your changes.
+### Translation
+
+   If you can Translate the app ! Please follow theses steps :
+
+  - **Fork the repository.**
+  - Modify the translation.js file
+  - Submit a pull request with the language you just added
+
+### Bug fixes
+
+   If you want to fix a bug ! Please follow theses steps :
+
+  - **Fork the repository.**
+  - Make your changes and ensure they adhere to the project's coding style.
+  - Submit a pull request with a clear description of your changes.
 
 ## 🙏 Acknowledgments
 

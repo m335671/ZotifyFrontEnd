@@ -1,22 +1,22 @@
 <template>
   <div class="card settings-card">
-    <h3 class="section-title">⚙️ Configuration</h3>
+    <h3 class="section-title">{{ t('settings_title') }}</h3>
     
     <div class="scroll-area">
       <div class="form-group">
-        <label>Client ID Spotify</label>
+        <label>{{ t('client_id') }}</label>
         <input 
           v-model="settings.client_id" 
           type="text" 
-          placeholder="Entrez votre Client ID" 
+          placeholder="Your Client ID" 
           class="form-input"
         />
-        <small class="hint">Requis pour l'accès API</small>
+        <small class="hint">{{ t('client_id_hint') }}</small>
       </div>
 
       <div class="form-group">
-        <label>Dossier de sortie</label>
-        <input  
+        <label>{{ t('output_dir') }}</label>
+        <input 
           v-model="settings.output_dir" 
           type="text" 
           placeholder="./downloads" 
@@ -25,37 +25,37 @@
       </div>
 
       <div class="form-group">
-        <label>Qualité Audio</label>
+        <label>{{ t('quality') }}</label>
         <select v-model="settings.quality" class="form-input">
-          <option value="very_high">Très Haute (320kbps)</option>
-          <option value="high">Haute</option>
-          <option value="medium">Moyenne</option>
-          <option value="low">Basse</option>
+          <option value="very_high">{{ t('q_very_high') }}</option>
+          <option value="high">{{ t('q_high') }}</option>
+          <option value="medium">{{ t('q_medium') }}</option>
+          <option value="low">{{ t('q_low') }}</option>
         </select>
       </div>
 
       <div class="toggles-wrapper">
         <label class="toggle-row">
-          <span>Mode Temps Réel (Anti-ban)</span>
+          <span>{{ t('realtime_mode') }}</span>
           <input type="checkbox" v-model="settings.realtime" class="toggle-switch" />
         </label>
         <label class="toggle-row">
-          <span>Métadonnées & Cover</span>
+          <span>{{ t('metadata') }}</span>
           <input type="checkbox" v-model="settings.embed_metadata" class="toggle-switch" />
         </label>
         <label class="toggle-row">
-          <span>Paroles (Lyrics)</span>
+          <span>{{ t('lyrics') }}</span>
           <input type="checkbox" v-model="settings.download_lyrics" class="toggle-switch" />
         </label>
       </div>
       
       <div class="form-group">
-        <label>Attente entre téléchargements (sec)</label>
+        <label>{{ t('wait_time') }}</label>
         <input 
           v-model.number="settings.bulk_wait_time" 
           type="number" 
           min="5" 
-          class="form-input"
+          class="form-input input-short" 
         />
       </div>
     </div>
@@ -73,6 +73,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 
+const props = defineProps(['lang', 't']) // Reçoit les props de App.vue
 const settings = ref({
   client_id: '',
   output_dir: './downloads',
@@ -89,9 +90,7 @@ const status = ref('')
 const loadSettings = () => {
   const stored = localStorage.getItem('zotify-settings')
   if (stored) {
-    try {
-      Object.assign(settings.value, JSON.parse(stored))
-    } catch (e) { console.error(e) }
+    try { Object.assign(settings.value, JSON.parse(stored)) } catch (e) {}
   }
 }
 
@@ -99,11 +98,11 @@ const saveSettings = () => {
   try {
     localStorage.setItem('zotify-settings', JSON.stringify(settings.value))
     saved.value = true
-    status.value = 'Sauvegardé automatiquement'
+    status.value = props.t('save_auto')
     setTimeout(() => status.value = '', 2000)
   } catch (e) {
     saved.value = false
-    status.value = 'Erreur sauvegarde'
+    status.value = props.t('save_error')
   }
 }
 
@@ -115,10 +114,11 @@ watch(settings, saveSettings, { deep: true })
 .settings-card {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .section-title {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
@@ -126,33 +126,19 @@ watch(settings, saveSettings, { deep: true })
 .scroll-area {
   flex: 1;
   overflow-y: auto;
-  padding-right: 0.5rem; /* Pour la scrollbar */
+  overflow-x: hidden;
+  padding-right: 0.5rem;
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.hint {
-  display: block;
-  margin-top: 0.25rem;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-}
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.9rem; }
+.hint { display: block; margin-top: 0.2rem; color: var(--text-secondary); font-size: 0.75rem; }
 
 .toggles-wrapper {
-  background: #f8fafc;
+  background: var(--bg-app); 
   border-radius: 8px;
   padding: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   border: 1px solid var(--border);
 }
 
@@ -165,27 +151,9 @@ watch(settings, saveSettings, { deep: true })
   font-size: 0.9rem;
 }
 
-.status-bar {
-  margin-top: 1rem;
-  height: 24px;
-  display: flex;
-  justify-content: center;
-}
-
-.status-pill {
-  font-size: 0.8rem;
-  padding: 2px 10px;
-  border-radius: 12px;
-  background: #e2e8f0;
-  color: var(--text-secondary);
-}
-
-.status-pill.success {
-  background: #dcfce7;
-  color: #166534;
-}
-
-/* Animations */
+.status-bar { margin-top: auto; height: 24px; text-align: center; }
+.status-pill { font-size: 0.8rem; padding: 2px 10px; border-radius: 12px; background: var(--border); }
+.status-pill.success { background: #dcfce7; color: #166534; }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
