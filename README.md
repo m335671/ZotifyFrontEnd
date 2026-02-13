@@ -73,7 +73,7 @@ Before you begin, ensure you have the following installed:
     ## Not yet Tested
         
     # Install the dependencies
-    pip install fastapi uvicorn zotify
+    pip install fastapi uvicorn
         
     # Start the Backend Server
     uvicorn main:app --reload --port 1337

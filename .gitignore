@@ -25,3 +25,4 @@ dist-ssr
 /Frontend/node_modules
 /Backend/app/__pycache__
 /Backend/downloads
+/Backend/venv
